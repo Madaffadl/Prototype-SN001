@@ -1,0 +1,259 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ ENUMS ============
+
+enum UserRole {
+  ADMIN
+  CASHIER
+  CUSTOMER
+}
+
+enum OrderStatus {
+  PENDING
+  RECEIVED
+  COOKING
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  QRIS
+  CARD
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+// ============ MODELS ============
+
+model User {
+  id          String    @id @default(cuid())
+  email       String    @unique
+  name        String
+  password    String
+  role        UserRole  @default(CUSTOMER)
+  avatar      String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  orders      Order[]
+  sessions    Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  token        String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  // Relations
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  image       String?
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id           String    @id @default(cuid())
+  name         String
+  description  String?
+  price        Decimal   @db.Decimal(10, 2)
+  image        String?
+  categoryId   String
+  isAvailable  Boolean   @default(true)
+  sortOrder    Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  category     Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  ingredients  ProductIngredient[]
+  orderItems   OrderItem[]
+  modifiers    ProductModifier[]
+
+  @@map("products")
+}
+
+model Ingredient {
+  id                String    @id @default(cuid())
+  name              String
+  unit              String    // e.g., "pcs", "kg", "liter"
+  stock             Decimal   @db.Decimal(10, 3)
+  lowStockThreshold Decimal   @db.Decimal(10, 3)
+  costPerUnit       Decimal   @db.Decimal(10, 2)
+  expiryAlertDays   Int       @default(7) // Alert X days before expiry
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  products          ProductIngredient[]
+  batches           IngredientBatch[]
+
+  @@map("ingredients")
+}
+
+// FIFO Batch tracking for ingredients with expiry dates
+model IngredientBatch {
+  id              String     @id @default(cuid())
+  ingredientId    String
+  batchNumber     String     // e.g., "BTH-20260208-001"
+  initialQuantity Decimal    @db.Decimal(10, 3)
+  remainingQty    Decimal    @db.Decimal(10, 3)
+  costPerUnit     Decimal    @db.Decimal(10, 2)
+  arrivalDate     DateTime   @default(now())
+  expiryDate      DateTime
+  supplier        String?
+  notes           String?
+  isExpired       Boolean    @default(false)
+  isFullyUsed     Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  // Relations
+  ingredient      Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+
+  @@index([ingredientId, expiryDate])
+  @@index([expiryDate])
+  @@map("ingredient_batches")
+}
+
+model ProductIngredient {
+  id           String     @id @default(cuid())
+  productId    String
+  ingredientId String
+  quantity     Decimal    @db.Decimal(10, 3)
+
+  // Relations
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, ingredientId])
+  @@map("product_ingredients")
+}
+
+model ProductModifier {
+  id           String   @id @default(cuid())
+  productId    String
+  name         String   // e.g., "Extra Cheese", "No Onion"
+  priceChange  Decimal  @db.Decimal(10, 2) @default(0)
+  isDefault    Boolean  @default(false)
+  groupName    String?  // e.g., "Toppings", "Size"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_modifiers")
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  orderNumber  String      @unique
+  tableNumber  Int?
+  status       OrderStatus @default(PENDING)
+  subtotal     Decimal     @db.Decimal(10, 2)
+  tax          Decimal     @db.Decimal(10, 2) @default(0)
+  discount     Decimal     @db.Decimal(10, 2) @default(0)
+  total        Decimal     @db.Decimal(10, 2)
+  notes        String?
+  userId       String?
+  cashierId    String?
+  isHeld       Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  // Relations
+  user         User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items        OrderItem[]
+  payment      Payment?
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id           String   @id @default(cuid())
+  orderId      String
+  productId    String
+  productName  String   // Snapshot of product name at time of order
+  quantity     Int
+  unitPrice    Decimal  @db.Decimal(10, 2)
+  totalPrice   Decimal  @db.Decimal(10, 2)
+  modifiers    String?  // JSON string of applied modifiers
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  // Relations
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  orderId         String        @unique
+  method          PaymentMethod
+  amount          Decimal       @db.Decimal(10, 2)
+  receivedAmount  Decimal?      @db.Decimal(10, 2)
+  changeAmount    Decimal?      @db.Decimal(10, 2)
+  status          PaymentStatus @default(PENDING)
+  transactionRef  String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  order           Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+// Daily sales summary for analytics
+model DailySales {
+  id           String   @id @default(cuid())
+  date         DateTime @db.Date @unique
+  totalOrders  Int      @default(0)
+  totalRevenue Decimal  @db.Decimal(12, 2) @default(0)
+  totalItems   Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("daily_sales")
+}

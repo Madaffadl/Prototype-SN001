@@ -1,0 +1,277 @@
+import type { Category, Product } from '@/types';
+
+// Mock Categories
+export const mockCategories: Category[] = [
+  {
+    id: 'cat-1',
+    name: 'Makanan',
+    description: 'Aneka hidangan utama',
+    image: '/categories/food.jpg',
+    sortOrder: 1,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'cat-2',
+    name: 'Minuman',
+    description: 'Minuman segar dan hangat',
+    image: '/categories/drinks.jpg',
+    sortOrder: 2,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'cat-3',
+    name: 'Snack',
+    description: 'Camilan dan makanan ringan',
+    image: '/categories/snacks.jpg',
+    sortOrder: 3,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'cat-4',
+    name: 'Dessert',
+    description: 'Hidangan penutup',
+    image: '/categories/dessert.jpg',
+    sortOrder: 4,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+];
+
+// Mock Products
+export const mockProducts: Product[] = [
+  // Makanan
+  {
+    id: 'prod-1',
+    name: 'Nasi Goreng Spesial',
+    description: 'Nasi goreng dengan telur, ayam, dan sayuran segar',
+    price: 35000,
+    image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&h=300&fit=crop',
+    categoryId: 'cat-1',
+    isAvailable: true,
+    sortOrder: 1,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    modifiers: [
+      { id: 'mod-1', productId: 'prod-1', name: 'Extra Telur', priceChange: 5000, isDefault: false, groupName: 'Tambahan' },
+      { id: 'mod-2', productId: 'prod-1', name: 'Extra Ayam', priceChange: 10000, isDefault: false, groupName: 'Tambahan' },
+      { id: 'mod-3', productId: 'prod-1', name: 'Pedas', priceChange: 0, isDefault: false, groupName: 'Level Pedas' },
+    ],
+  },
+  {
+    id: 'prod-2',
+    name: 'Mie Goreng Seafood',
+    description: 'Mie goreng dengan udang, cumi, dan sayuran',
+    price: 42000,
+    image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=400&h=300&fit=crop',
+    categoryId: 'cat-1',
+    isAvailable: true,
+    sortOrder: 2,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    modifiers: [
+      { id: 'mod-4', productId: 'prod-2', name: 'Extra Seafood', priceChange: 15000, isDefault: false, groupName: 'Tambahan' },
+    ],
+  },
+  {
+    id: 'prod-3',
+    name: 'Ayam Bakar Madu',
+    description: 'Ayam bakar dengan bumbu madu special',
+    price: 48000,
+    image: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=400&h=300&fit=crop',
+    categoryId: 'cat-1',
+    isAvailable: true,
+    sortOrder: 3,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'prod-4',
+    name: 'Sate Ayam',
+    description: '10 tusuk sate ayam dengan bumbu kacang',
+    price: 38000,
+    image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&h=300&fit=crop',
+    categoryId: 'cat-1',
+    isAvailable: true,
+    sortOrder: 4,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'prod-5',
+    name: 'Burger Deluxe',
+    description: 'Beef patty, cheese, lettuce, tomato',
+    price: 55000,
+    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop',
+    categoryId: 'cat-1',
+    isAvailable: false, // Out of stock example
+    sortOrder: 5,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'prod-6',
+    name: 'Pizza Margherita',
+    description: 'Classic pizza with tomato, mozzarella, basil',
+    price: 75000,
+    image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400&h=300&fit=crop',
+    categoryId: 'cat-1',
+    isAvailable: true,
+    sortOrder: 6,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  // Minuman
+  {
+    id: 'prod-7',
+    name: 'Es Teh Manis',
+    description: 'Teh manis dingin segar',
+    price: 8000,
+    image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400&h=300&fit=crop',
+    categoryId: 'cat-2',
+    isAvailable: true,
+    sortOrder: 1,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'prod-8',
+    name: 'Jus Alpukat',
+    description: 'Jus alpukat segar dengan susu',
+    price: 18000,
+    image: 'https://images.unsplash.com/photo-1623065422902-30a2d299bbe4?w=400&h=300&fit=crop',
+    categoryId: 'cat-2',
+    isAvailable: true,
+    sortOrder: 2,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    modifiers: [
+      { id: 'mod-5', productId: 'prod-8', name: 'Extra Susu', priceChange: 3000, isDefault: false },
+      { id: 'mod-6', productId: 'prod-8', name: 'Less Sugar', priceChange: 0, isDefault: false },
+    ],
+  },
+  {
+    id: 'prod-9',
+    name: 'Kopi Susu Gula Aren',
+    description: 'Espresso dengan susu dan gula aren',
+    price: 22000,
+    image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400&h=300&fit=crop',
+    categoryId: 'cat-2',
+    isAvailable: true,
+    sortOrder: 3,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    modifiers: [
+      { id: 'mod-7', productId: 'prod-9', name: 'Extra Shot', priceChange: 5000, isDefault: false },
+      { id: 'mod-8', productId: 'prod-9', name: 'Oat Milk', priceChange: 8000, isDefault: false },
+    ],
+  },
+  {
+    id: 'prod-10',
+    name: 'Lemon Tea',
+    description: 'Teh lemon segar',
+    price: 12000,
+    image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=400&h=300&fit=crop',
+    categoryId: 'cat-2',
+    isAvailable: true,
+    sortOrder: 4,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'prod-11',
+    name: 'Matcha Latte',
+    description: 'Green tea latte with oat milk',
+    price: 28000,
+    image: 'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=400&h=300&fit=crop',
+    categoryId: 'cat-2',
+    isAvailable: true,
+    sortOrder: 5,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  // Snack
+  {
+    id: 'prod-12',
+    name: 'French Fries',
+    description: 'Kentang goreng renyah dengan saus',
+    price: 18000,
+    image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400&h=300&fit=crop',
+    categoryId: 'cat-3',
+    isAvailable: true,
+    sortOrder: 1,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'prod-13',
+    name: 'Chicken Wings',
+    description: '6 pcs crispy chicken wings',
+    price: 32000,
+    image: 'https://images.unsplash.com/photo-1608039755401-742074f0548d?w=400&h=300&fit=crop',
+    categoryId: 'cat-3',
+    isAvailable: true,
+    sortOrder: 2,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'prod-14',
+    name: 'Nachos Supreme',
+    description: 'Tortilla chips with cheese and salsa',
+    price: 28000,
+    image: 'https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?w=400&h=300&fit=crop',
+    categoryId: 'cat-3',
+    isAvailable: true,
+    sortOrder: 3,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  // Dessert
+  {
+    id: 'prod-15',
+    name: 'Chocolate Lava Cake',
+    description: 'Warm chocolate cake with melted center',
+    price: 35000,
+    image: 'https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=400&h=300&fit=crop',
+    categoryId: 'cat-4',
+    isAvailable: true,
+    sortOrder: 1,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: 'prod-16',
+    name: 'Ice Cream Sundae',
+    description: 'Vanilla ice cream with toppings',
+    price: 25000,
+    image: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&h=300&fit=crop',
+    categoryId: 'cat-4',
+    isAvailable: true,
+    sortOrder: 2,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+];
+
+// Get products by category
+export function getProductsByCategory(categoryId: string): Product[] {
+  if (categoryId === 'all') return mockProducts;
+  return mockProducts.filter((p) => p.categoryId === categoryId);
+}
+
+// Search products
+export function searchProducts(query: string): Product[] {
+  const lowercaseQuery = query.toLowerCase();
+  return mockProducts.filter(
+    (p) =>
+      p.name.toLowerCase().includes(lowercaseQuery) ||
+      p.description?.toLowerCase().includes(lowercaseQuery)
+  );
+}
