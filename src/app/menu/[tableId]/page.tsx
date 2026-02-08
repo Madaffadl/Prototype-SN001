@@ -12,7 +12,9 @@ import {
   ChefHat,
   Bell,
   ImageOff,
+  Loader2,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +37,7 @@ import { ThemeToggle } from '@/components/shared';
 import { formatCurrency, cn, getOrderStatusColor } from '@/lib/utils';
 import { mockCategories, mockProducts } from '@/lib/mock-data';
 import { useCartStore } from '@/stores/cartStore';
+import { OrderProgressTracker } from '@/components/customer/OrderProgressTracker';
 import type { Product, ProductModifier, OrderStatus } from '@/types';
 
 interface CustomerMenuPageProps {
@@ -51,6 +54,7 @@ export default function CustomerMenuPage({ params }: CustomerMenuPageProps) {
   const [selectedModifiers, setSelectedModifiers] = useState<ProductModifier[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [cartOpen, setCartOpen] = useState(false);
+  const [orderTrackerOpen, setOrderTrackerOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   const { items, addItem, removeItem, updateQuantity, total, itemCount, clearCart, setTableNumber, calculateTotals } = useCartStore();
@@ -86,6 +90,9 @@ export default function CustomerMenuPage({ params }: CustomerMenuPageProps) {
   const handleAddToCart = () => {
     if (!selectedProduct) return;
     addItem(selectedProduct, quantity, selectedModifiers);
+    toast.success('Produk ditambahkan ke keranjang', {
+      description: `${quantity}x ${selectedProduct.name}`,
+    });
     setSelectedProduct(null);
     setSelectedModifiers([]);
     setQuantity(1);
@@ -97,11 +104,27 @@ export default function CustomerMenuPage({ params }: CustomerMenuPageProps) {
     return (selectedProduct.price + modifierTotal) * quantity;
   };
 
-  const handlePlaceOrder = () => {
-    // In real app, this would submit to API
-    alert('Pesanan berhasil dikirim ke dapur!');
-    clearCart();
-    setCartOpen(false);
+  const handlePlaceOrder = async () => {
+    // Simulate API call with promise toast
+    const promise = new Promise((resolve) => setTimeout(resolve, 2000));
+
+    toast.promise(promise, {
+      loading: 'Mengirim pesanan ke dapur...',
+      success: () => {
+        clearCart();
+        setCartOpen(false);
+        setOrderTrackerOpen(true); // Show order tracker after placing
+        return 'Pesanan berhasil dikirim!';
+      },
+      error: 'Gagal mengirim pesanan',
+    });
+  };
+
+  const handleCallWaiter = () => {
+    toast.info('Pelayan dipanggil', {
+      description: 'Mohon tunggu sebentar, pelayan kami akan segera datang.',
+      icon: <Bell className="h-4 w-4 text-blue-500" />,
+    });
   };
 
   if (!mounted) {
@@ -124,34 +147,52 @@ export default function CustomerMenuPage({ params }: CustomerMenuPageProps) {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => {
+                toast.info('Pelayan dipanggil', {
+                  description: 'Mohon tunggu sebentar, pelayan kami akan segera datang.',
+                  icon: <Bell className="h-4 w-4 text-blue-500" />,
+                });
+              }}
+            >
+              <Bell className="h-4 w-4" />
+              <span className="hidden sm:inline">Panggil</span>
+            </Button>
             <ThemeToggle />
           </div>
         </div>
 
         {/* Category Tabs */}
-        <ScrollArea className="w-full whitespace-nowrap">
-          <div className="flex gap-2 px-4 pb-3">
-            <Button
-              variant={activeCategory === 'all' ? 'default' : 'outline'}
-              size="sm"
-              className="rounded-full shrink-0"
-              onClick={() => setActiveCategory('all')}
-            >
-              Semua
-            </Button>
-            {mockCategories.map((category) => (
+        <div className="relative">
+          <ScrollArea className="w-full whitespace-nowrap">
+            <div className="flex gap-2 px-4 pb-3 pr-12">
               <Button
-                key={category.id}
-                variant={activeCategory === category.id ? 'default' : 'outline'}
+                variant={activeCategory === 'all' ? 'default' : 'outline'}
                 size="sm"
                 className="rounded-full shrink-0"
-                onClick={() => setActiveCategory(category.id)}
+                onClick={() => setActiveCategory('all')}
               >
-                {category.name}
+                Semua
               </Button>
-            ))}
-          </div>
-        </ScrollArea>
+              {mockCategories.map((category) => (
+                <Button
+                  key={category.id}
+                  variant={activeCategory === category.id ? 'default' : 'outline'}
+                  size="sm"
+                  className="rounded-full shrink-0"
+                  onClick={() => setActiveCategory(category.id)}
+                >
+                  {category.name}
+                </Button>
+              ))}
+            </div>
+          </ScrollArea>
+          {/* Scroll Fade Indicator */}
+          <div className="absolute right-0 top-0 bottom-3 w-12 bg-gradient-to-l from-background to-transparent pointer-events-none" />
+        </div>
       </header>
 
       {/* Order Status Banner (if exists) */}
@@ -357,23 +398,23 @@ export default function CustomerMenuPage({ params }: CustomerMenuPageProps) {
                           {formatCurrency(item.price * item.quantity)}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
+                      <div className="flex items-center gap-2 bg-muted rounded-xl p-1">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-10 w-10"
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
                         >
-                          <Minus className="h-3 w-3" />
+                          <Minus className="h-4 w-4" />
                         </Button>
-                        <span className="w-6 text-center text-sm">{item.quantity}</span>
+                        <span className="w-8 text-center text-base font-semibold">{item.quantity}</span>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-10 w-10"
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         >
-                          <Plus className="h-3 w-3" />
+                          <Plus className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
@@ -397,6 +438,21 @@ export default function CustomerMenuPage({ params }: CustomerMenuPageProps) {
           </Sheet>
         </div>
       )}
+
+      {/* Order Progress Tracker */}
+      <Sheet open={orderTrackerOpen} onOpenChange={setOrderTrackerOpen}>
+        <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <ChefHat className="h-5 w-5" />
+              Status Pesanan
+            </SheetTitle>
+          </SheetHeader>
+          <div className="mt-4">
+            <OrderProgressTracker onCallWaiter={handleCallWaiter} />
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

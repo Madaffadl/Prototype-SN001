@@ -14,6 +14,7 @@ import {
   ChevronDown,
   ChevronRight,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -333,10 +334,18 @@ export default function InventoryPage() {
     };
 
     if (isEditingIngredient && selectedItem) {
+      // UPDATE existing ingredient
       setInventory(prev => prev.map(i => i.id === selectedItem.id ? newIngredient : i));
     } else {
+      // ADD new ingredient
       setInventory(prev => [...prev, newIngredient]);
     }
+
+    toast.success(
+      isEditingIngredient 
+        ? 'Bahan berhasil diperbarui' 
+        : 'Bahan baru berhasil ditambahkan'
+    );
 
     setIngredientDialogOpen(false);
     setIngredientForm(defaultIngredientForm);
@@ -382,6 +391,10 @@ export default function InventoryPage() {
     setBatchDialogOpen(false);
     setBatchForm(defaultBatchForm);
     
+    toast.success('Batch baru berhasil ditambahkan', {
+      description: `No. Batch: ${newBatch.batchNumber}`
+    });
+    
     // Expand the ingredient to show new batch
     setExpandedItems(prev => new Set([...prev, batchForm.ingredientId]));
   };
@@ -389,6 +402,7 @@ export default function InventoryPage() {
   const handleDelete = () => {
     if (selectedItem) {
       setInventory(prev => prev.filter(i => i.id !== selectedItem.id));
+      toast.success('Bahan berhasil dihapus');
       setDeleteDialogOpen(false);
       setSelectedItem(null);
     }

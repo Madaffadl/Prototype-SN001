@@ -156,25 +156,26 @@ export function CartSidebar({ onCheckout, onHold, className }: CartSidebarProps)
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
 
-                    <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
+                    <div className="flex items-center gap-1 bg-muted rounded-xl p-1">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 touch-target"
+                        className="h-10 w-10 touch-target"
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
                       >
-                        <Minus className="h-3 w-3" />
+                        <Minus className="h-4 w-4" />
                       </Button>
-                      <span className="w-8 text-center text-sm font-medium">
+                      <span className="w-10 text-center text-base font-semibold">
                         {item.quantity}
                       </span>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 touch-target"
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        className="h-10 w-10 touch-target"
+                        onClick={() => updateQuantity(item.id, Math.min(99, item.quantity + 1))}
+                        disabled={item.quantity >= 99}
                       >
-                        <Plus className="h-3 w-3" />
+                        <Plus className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>

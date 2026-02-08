@@ -233,3 +233,42 @@
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background;
   }
 }
+
+/* ============ PRINT STYLES FOR RECEIPT ============ */
+@media print {
+  /* Hide everything except receipt */
+  body * {
+    visibility: hidden;
+  }
+
+  .receipt-print,
+  .receipt-print * {
+    visibility: visible;
+  }
+
+  .receipt-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm;
+    background: white !important;
+    color: black !important;
+    font-size: 10pt;
+  }
+
+  /* Hide UI elements when printing */
+  header,
+  nav,
+  aside,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Reset page margins */
+  @page {
+    size: 80mm auto;
+    margin: 0;
+  }
+}
+

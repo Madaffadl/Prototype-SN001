@@ -4,3 +4,5 @@ export { TopProductsChart } from './TopProductsChart';
 export { RecentOrders } from './RecentOrders';
 export { LowStockAlerts } from './LowStockAlerts';
 export { AdminSidebar } from './AdminSidebar';
+export { TableManagement } from './TableManagement';
+

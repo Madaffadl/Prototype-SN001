@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import { Plus, ImageOff } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,6 +24,7 @@ export function ProductCard({
   size = 'md',
 }: ProductCardProps) {
   const addItem = useCartStore((state) => state.addItem);
+  const [imageError, setImageError] = useState(false);
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -68,13 +70,14 @@ export function ProductCard({
             imageSizes[size]
           )}
         >
-          {product.image ? (
+          {product.image && !imageError ? (
             <Image
               src={product.image}
               alt={product.name}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               sizes="(max-width: 768px) 50vw, 25vw"
+              onError={() => setImageError(true)}
             />
           ) : (
             <ImageOff className="h-8 w-8 text-muted-foreground/50" />
@@ -117,12 +120,12 @@ export function ProductCard({
                 size="icon"
                 variant="default"
                 className={cn(
-                  'rounded-full opacity-0 transition-opacity group-hover:opacity-100',
-                  size === 'sm' ? 'h-7 w-7' : 'h-8 w-8'
+                  'rounded-full shadow-md hover:shadow-lg transition-all hover:scale-105',
+                  size === 'sm' ? 'h-8 w-8' : 'h-10 w-10'
                 )}
                 onClick={handleQuickAdd}
               >
-                <Plus className={size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
+                <Plus className={size === 'sm' ? 'h-4 w-4' : 'h-5 w-5'} />
               </Button>
             )}
           </div>

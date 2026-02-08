@@ -1,4 +1,6 @@
-'use client';
+ 'use client';
+
+import { useEffect, useState } from 'react';
 
 import {
   DollarSign,
@@ -12,6 +14,7 @@ import {
   TopProductsChart,
   RecentOrders,
   LowStockAlerts,
+  TableManagement,
 } from '@/components/admin';
 import { formatCurrency } from '@/lib/utils';
 import {
@@ -23,11 +26,47 @@ import {
 } from '@/lib/mock-analytics';
 
 export default function DashboardPage() {
-  const stats = getDashboardStats();
-  const salesData = generateSalesData();
-  const topProducts = getTopProducts();
-  const recentOrders = getRecentOrders();
-  const lowStockIngredients = getLowStockIngredients();
+  const [data, setData] = useState<{
+    stats: ReturnType<typeof getDashboardStats>;
+    salesData: ReturnType<typeof generateSalesData>;
+    topProducts: ReturnType<typeof getTopProducts>;
+    recentOrders: ReturnType<typeof getRecentOrders>;
+    lowStockIngredients: ReturnType<typeof getLowStockIngredients>;
+  } | null>(null);
+
+  useEffect(() => {
+    // Generate data only on client
+    setData({
+      stats: getDashboardStats(),
+      salesData: generateSalesData(),
+      topProducts: getTopProducts(),
+      recentOrders: getRecentOrders(),
+      lowStockIngredients: getLowStockIngredients(),
+    });
+  }, []);
+
+  // Show loading skeleton while data is generated
+  if (!data) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-32 bg-muted rounded-xl" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="h-[400px] bg-muted rounded-xl" />
+          <div className="h-[400px] bg-muted rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="h-[400px] bg-muted rounded-xl lg:col-span-2" />
+          <div className="h-[400px] bg-muted rounded-xl" />
+        </div>
+      </div>
+    );
+  }
+
+  const { stats, salesData, topProducts, recentOrders, lowStockIngredients } = data;
 
   return (
     <div className="space-y-6">
@@ -77,6 +116,9 @@ export default function DashboardPage() {
         <RecentOrders orders={recentOrders} className="lg:col-span-2" />
         <LowStockAlerts ingredients={lowStockIngredients} />
       </div>
+
+      {/* Table Management */}
+      <TableManagement />
     </div>
   );
 }

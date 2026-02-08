@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'sonner';
 import { useState } from 'react';
 import {
   Banknote,
@@ -82,18 +83,36 @@ export function PaymentModal({
 
     setIsProcessing(true);
 
-    // Simulate payment processing
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const paymentPromise = new Promise((resolve, reject) => {
+      setTimeout(() => {
+        // Simulate random failure for demo purpose (10% chance)
+        if (Math.random() < 0.1) {
+          reject(new Error('Koneksi terputus'));
+        } else {
+          resolve(true);
+        }
+      }, 1500);
+    });
 
-    setIsProcessing(false);
-    setStep('success');
-
-    // Wait a bit then complete
-    setTimeout(() => {
-      onComplete?.(selectedMethod, Number(receivedAmount) || undefined);
-      clearCart();
-      handleClose();
-    }, 2000);
+    toast.promise(paymentPromise, {
+      loading: 'Memproses pembayaran...',
+      success: () => {
+        setStep('success');
+        
+        // Wait a bit then complete
+        setTimeout(() => {
+          onComplete?.(selectedMethod, Number(receivedAmount) || undefined);
+          clearCart();
+          handleClose();
+        }, 2000);
+        
+        return `Pembayaran ${selectedMethod === 'CASH' ? 'Tunai' : selectedMethod} Berhasil`;
+      },
+      error: (err) => {
+        setIsProcessing(false);
+        return `Pembayaran Gagal: ${err.message}`;
+      },
+    });
   };
 
   const handleClose = () => {

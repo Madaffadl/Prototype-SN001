@@ -11,6 +11,7 @@ import {
   ImageOff,
   X,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -175,6 +176,12 @@ export default function MenuManagementPage() {
       setProducts(prev => [...prev, productData]);
     }
 
+    toast.success(
+      isEditing 
+        ? 'Produk berhasil diperbarui' 
+        : 'Produk berhasil ditambahkan'
+    );
+
     setFormDialogOpen(false);
     setFormData(defaultFormData);
     setSelectedProduct(null);
@@ -183,6 +190,7 @@ export default function MenuManagementPage() {
   const handleDelete = () => {
     if (selectedProduct) {
       setProducts(products.filter((p) => p.id !== selectedProduct.id));
+      toast.success('Produk berhasil dihapus');
       setDeleteDialogOpen(false);
       setSelectedProduct(null);
     }

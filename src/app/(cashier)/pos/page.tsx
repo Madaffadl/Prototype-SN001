@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, ChefHat } from 'lucide-react';
+import { ShoppingCart, ChefHat, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Sheet,
   SheetContent,
+  SheetHeader,
+  SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
 import {
@@ -16,18 +18,23 @@ import {
   CategoryTabs,
   PaymentModal,
   CartSidebar,
+  OrderReviewModal,
+  OrderHistorySidebar,
 } from '@/components/pos';
 import { Header } from '@/components/shared';
 import { mockCategories, mockProducts, searchProducts } from '@/lib/mock-data';
 import { useCartStore } from '@/stores/cartStore';
+import { usePOSKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 export default function CashierPOSPage() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [reviewOpen, setReviewOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const itemCount = useCartStore((state) => state.itemCount);
+  const { itemCount, clearCart } = useCartStore();
 
   // Filter products based on category and search
   const filteredProducts = useMemo(() => {
@@ -49,14 +56,40 @@ export default function CashierPOSPage() {
     return products;
   }, [activeCategory, searchQuery]);
 
+  // Opens Order Review modal first (before payment)
   const handleCheckout = () => {
-    setPaymentOpen(true);
+    setReviewOpen(true);
     setMobileCartOpen(false);
+  };
+
+  // Called when user confirms order in Review modal
+  const handleConfirmOrder = () => {
+    setReviewOpen(false);
+    setPaymentOpen(true);
   };
 
   const handlePaymentComplete = () => {
     setPaymentOpen(false);
   };
+
+  // Category selection handler for keyboard shortcuts
+  const handleCategorySelect = (index: number) => {
+    if (index === 0) {
+      setActiveCategory('all');
+    } else if (index - 1 < mockCategories.length) {
+      setActiveCategory(mockCategories[index - 1].id);
+    }
+  };
+
+  // Keyboard shortcuts
+  usePOSKeyboardShortcuts({
+    onCheckout: () => itemCount > 0 && handleCheckout(),
+    onClearCart: clearCart,
+    onToggleCart: () => setMobileCartOpen((prev) => !prev),
+    onCategorySelect: handleCategorySelect,
+    onFocusSearch: () => searchInputRef.current?.focus(),
+    enabled: !paymentOpen,
+  });
 
   return (
     <>
@@ -74,6 +107,14 @@ export default function CashierPOSPage() {
                 categories={mockCategories}
                 activeCategory={activeCategory}
                 onCategoryChange={setActiveCategory}
+              />
+              <OrderHistorySidebar
+                triggerButton={
+                  <Button variant="outline" size="sm" className="shrink-0 gap-2">
+                    <History className="h-4 w-4" />
+                    Riwayat
+                  </Button>
+                }
               />
               <Button variant="outline" size="sm" asChild className="shrink-0 gap-2">
                 <Link href="/kitchen">
@@ -122,6 +163,9 @@ export default function CashierPOSPage() {
             </Button>
           </SheetTrigger>
           <SheetContent side="right" className="w-full sm:max-w-md p-0">
+            <SheetHeader className="sr-only">
+              <SheetTitle>Keranjang Belanja</SheetTitle>
+            </SheetHeader>
             <CartSidebar
               onCheckout={handleCheckout}
               className="h-full"
@@ -130,7 +174,14 @@ export default function CashierPOSPage() {
         </Sheet>
       </div>
 
-      {/* Payment Modal */}
+      {/* Order Review Modal - Step 1 before payment */}
+      <OrderReviewModal
+        open={reviewOpen}
+        onOpenChange={setReviewOpen}
+        onConfirm={handleConfirmOrder}
+      />
+
+      {/* Payment Modal - Step 2 after review */}
       <PaymentModal
         open={paymentOpen}
         onOpenChange={setPaymentOpen}
